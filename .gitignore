@@ -1,0 +1,20 @@
+# Qt/qmake build artifacts
+/.qmake.stash
+/Makefile
+/Makefile.Debug
+/Makefile.Release
+/debug/
+/release/
+
+# CMake build artifacts
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+
+# Local editor/OS files
+.qtcreator/
+.DS_Store
+Thumbs.db
+*.user
+*.autosave

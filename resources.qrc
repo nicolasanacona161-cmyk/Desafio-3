@@ -1,0 +1,26 @@
+<RCC>
+    <qresource prefix="/sprites">
+        <file alias="iron_man.png">iron_man.png</file>
+        <file alias="spiderman.png">spiderman.png</file>
+        <file alias="Lv2_spiderman_DASW.png">Lv2_spiderman_DASW.png</file>
+        <file alias="thor.png">thor.png</file>
+        <file alias="snoopy.png">snoopy.png</file>
+        <file alias="mau.png">mau.png</file>
+        <file alias="yeng.png">yeng.png</file>
+    </qresource>
+    <qresource prefix="/fondos">
+        <file alias="nivel1.png">fondo nivel1.png</file>
+        <file alias="nivel2.png">fondo nivel2_boxeo.png</file>
+    </qresource>
+    <qresource prefix="/branding">
+        <file alias="logo_nicmac.png">Logo_NICMAC_OF.png</file>
+    </qresource>
+    <qresource prefix="/menu_portraits">
+        <file alias="iron.png">assets_menu/iron_menu.png</file>
+        <file alias="spiderman.png">assets_menu/spiderman_menu.png</file>
+        <file alias="thor.png">assets_menu/thor_menu.png</file>
+        <file alias="snoopy.png">assets_menu/snoopy_menu.png</file>
+        <file alias="mau.png">assets_menu/mau_menu.png</file>
+        <file alias="yeng.png">assets_menu/yeng_menu.png</file>
+    </qresource>
+</RCC>
