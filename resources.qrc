@@ -23,4 +23,7 @@
         <file alias="mau.png">assets_menu/mau_menu.png</file>
         <file alias="yeng.png">assets_menu/yeng_menu.png</file>
     </qresource>
+    <qresource prefix="/sonidos">
+        <file alias="menu.mp3">sonidos/menu.mp3</file>
+    </qresource>
 </RCC>

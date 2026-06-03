@@ -7,12 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 QUIET COMPONENTS Widgets)
+find_package(Qt6 QUIET COMPONENTS Widgets Multimedia)
 if(Qt6_FOUND)
-    set(QT_LIBS Qt6::Widgets)
+    set(QT_LIBS Qt6::Widgets Qt6::Multimedia)
 else()
-    find_package(Qt5 REQUIRED COMPONENTS Widgets)
-    set(QT_LIBS Qt5::Widgets)
+    find_package(Qt5 REQUIRED COMPONENTS Widgets Multimedia)
+    set(QT_LIBS Qt5::Widgets Qt5::Multimedia)
 endif()
 
 add_executable(MarvelBoxing
