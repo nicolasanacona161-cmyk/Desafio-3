@@ -8,7 +8,9 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QList>
 #include <QMediaPlayer>
+#include <QPair>
 #include <QPixmap>
 #include <QPropertyAnimation>
 #include <QPushButton>
@@ -19,6 +21,8 @@
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QAudioOutput>
+#else
+#include <QMediaContent>
 #endif
 #include <QVBoxLayout>
 
@@ -100,7 +104,8 @@ QWidget* MainWindow::crearMenu()
 
     pantalla->setStyleSheet(
         "QWidget#menuFondo {"
-        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #050910, stop:0.42 #081827, stop:0.58 #150c12, stop:1 #08070b);"
+        "  border-image: url(:/fondos/menu.png) 0 0 0 0 stretch stretch;"
+        "  background: #050910;"
         "}"
         "QLabel { color: #f4f7fb; }"
         "QLabel#marca { color: #bfe9ff; font-size: 42px; font-weight: 800; letter-spacing: 0px; }"
@@ -116,6 +121,22 @@ QWidget* MainWindow::crearMenu()
         "QPushButton#botonActivoAzul { border: 2px solid #29c4ff; background: rgba(12, 66, 105, 230); }"
         "QPushButton#botonActivoRojo { border: 2px solid #ff4141; background: rgba(99, 18, 23, 230); }"
         "QPushButton#tilePersonaje { min-width: 72px; min-height: 72px; padding: 6px; font-size: 11px; }"
+        "QWidget#selectorFondo {"
+        "  border-image: url(:/fondos/menu.png) 0 0 0 0 stretch stretch;"
+        "  background: #050509;"
+        "}"
+        "QFrame#panelJugadorArcade { border: none; background: transparent; }"
+        "QFrame#panelRivalArcade { border: none; background: transparent; }"
+        "QFrame#globoSelector { border: 2px solid rgba(135, 226, 255, 180); border-radius: 150px; background: qradialgradient(cx:0.5, cy:0.5, radius:0.72, stop:0 rgba(60, 146, 198, 80), stop:0.48 rgba(22, 45, 76, 110), stop:1 rgba(80, 18, 54, 165)); }"
+        "QLabel#nombreSelectorGrande { color: #ffffff; font-size: 22px; font-weight: 900; }"
+        "QLabel#ladoSelectorAzul { color: #7ae7ff; font-size: 18px; font-weight: 900; }"
+        "QLabel#ladoSelectorRojo { color: #ffd166; font-size: 18px; font-weight: 900; }"
+        "QLabel#personajeGrandeAzul { border: none; background: transparent; }"
+        "QLabel#personajeGrandeRojo { border: none; background: transparent; }"
+        "QPushButton#tilePersonajeArcade { min-width: 70px; min-height: 70px; max-width: 70px; max-height: 70px; border: 4px solid #ffd200; border-radius: 2px; padding: 2px; background: rgba(250, 178, 18, 225); color: #111; font-size: 8px; font-weight: 900; }"
+        "QPushButton#tilePersonajeArcade:hover { border-color: #ffffff; background: #ffe568; }"
+        "QPushButton#tilePersonajeAzul { min-width: 70px; min-height: 70px; max-width: 70px; max-height: 70px; border: 4px solid #28d7ff; border-radius: 2px; padding: 2px; background: rgba(27, 137, 190, 235); color: #ffffff; font-size: 8px; font-weight: 900; }"
+        "QPushButton#tilePersonajeRojo { min-width: 70px; min-height: 70px; max-width: 70px; max-height: 70px; border: 4px solid #ff3b3b; border-radius: 2px; padding: 2px; background: rgba(184, 34, 34, 235); color: #ffffff; font-size: 8px; font-weight: 900; }"
         "QPushButton#tileNivel { min-height: 74px; text-align: left; }"
         "QPushButton#tileDificultad { min-height: 70px; text-align: left; }");
     actualizarMenuVisual();
@@ -192,67 +213,91 @@ QWidget* MainWindow::crearPortadaMenu(QWidget* parent)
 QWidget* MainWindow::crearSelectorPersonajes(QWidget* parent)
 {
     auto* pantalla = new QWidget(parent);
-    pantalla->setObjectName("menuFondo");
+    pantalla->setObjectName("selectorFondo");
     auto* raiz = new QVBoxLayout(pantalla);
-    raiz->setContentsMargins(46, 32, 46, 32);
-    raiz->setSpacing(14);
+    raiz->setContentsMargins(28, 18, 28, 22);
+    raiz->setSpacing(8);
 
-    auto* titulo = new QLabel("ELEGIR PERSONAJE", pantalla);
-    titulo->setObjectName("encabezado");
+    auto* titulo = new QLabel("CHARACTER SELECT", pantalla);
+    titulo->setObjectName("marca");
     titulo->setAlignment(Qt::AlignCenter);
     raiz->addWidget(titulo);
 
-    auto* versus = new QHBoxLayout;
-    versus->setSpacing(26);
-    auto crearPanel = [pantalla](const QString& titulo, const QString& objectName, QLabel** retrato, QLabel** nombre) {
-        auto* layout = new QVBoxLayout;
-        auto* labelTitulo = new QLabel(titulo, pantalla);
-        labelTitulo->setObjectName(objectName == QString("portraitAzul") ? "nombreAzul" : "nombreRojo");
+    auto* cuerpo = new QHBoxLayout;
+    cuerpo->setSpacing(12);
+
+    auto crearPanel = [pantalla](const QString& titulo, const QString& frameName, const QString& tituloName, QLabel** retrato, QLabel** nombre) {
+        auto* frame = new QFrame(pantalla);
+        frame->setObjectName(frameName);
+        frame->setMinimumWidth(250);
+        frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        auto* layout = new QVBoxLayout(frame);
+        layout->setContentsMargins(8, 8, 8, 8);
+        layout->setSpacing(8);
+        auto* labelTitulo = new QLabel(titulo, frame);
+        labelTitulo->setObjectName(tituloName);
         labelTitulo->setAlignment(Qt::AlignCenter);
-        *retrato = new QLabel(pantalla);
-        (*retrato)->setObjectName(objectName);
+        *retrato = new QLabel(frame);
+        (*retrato)->setObjectName(frameName == QString("panelJugadorArcade") ? "personajeGrandeAzul" : "personajeGrandeRojo");
         (*retrato)->setAlignment(Qt::AlignCenter);
-        (*retrato)->setMinimumSize(220, 170);
-        *nombre = new QLabel(pantalla);
+        (*retrato)->setMinimumSize(260, 390);
+        (*retrato)->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        *nombre = new QLabel(frame);
         (*nombre)->setAlignment(Qt::AlignCenter);
-        (*nombre)->setObjectName(objectName == QString("portraitAzul") ? "nombreAzul" : "nombreRojo");
+        (*nombre)->setObjectName("nombreSelectorGrande");
         layout->addWidget(labelTitulo);
-        layout->addWidget(*retrato);
+        layout->addWidget(*retrato, 1);
         layout->addWidget(*nombre);
-        return layout;
+        return frame;
     };
 
-    versus->addLayout(crearPanel("JUGADOR 1", "portraitAzul", &m_retratoJugadorSelector, &m_nombreJugadorSelector), 1);
-    auto* vs = new QLabel("VS", pantalla);
-    vs->setObjectName("marca");
+    cuerpo->addWidget(crearPanel("PLAYER 1", "panelJugadorArcade", "ladoSelectorAzul", &m_retratoJugadorSelector, &m_nombreJugadorSelector), 1);
+
+    auto* centro = new QVBoxLayout;
+    centro->setSpacing(8);
+    auto* vs = new QLabel("VERSUS", pantalla);
+    vs->setObjectName("submarca");
     vs->setAlignment(Qt::AlignCenter);
-    versus->addWidget(vs, 0);
-    versus->addLayout(crearPanel("RIVAL", "portraitRojo", &m_retratoRivalSelector, &m_nombreRivalSelector), 1);
-    raiz->addLayout(versus);
+    centro->addWidget(vs);
+
+    auto* globo = new QFrame(pantalla);
+    globo->setObjectName("globoSelector");
+    globo->setMinimumSize(300, 300);
+    globo->setMaximumSize(320, 320);
+    auto* grid = new QGridLayout(globo);
+    grid->setContentsMargins(34, 36, 34, 34);
+    grid->setHorizontalSpacing(6);
+    grid->setVerticalSpacing(6);
+    const QStringList personajes = {"Iron Man", "Spider-Man", "Thor", "Snoopy", "Mau", "Yeng"};
+    const QList<QPair<int, int>> posiciones = {
+        {0, 0}, {0, 1}, {0, 2},
+        {1, 0}, {1, 1}, {1, 2}
+    };
+    for (int i = 0; i < personajes.size(); ++i) {
+        const QString nombre = personajes.at(i);
+        auto* boton = new QPushButton(globo);
+        boton->setObjectName("tilePersonajeArcade");
+        boton->setToolTip(nombre.toUpper());
+        boton->setIcon(QIcon(imagenEleccionPersonaje(nombre, QSize(96, 96))));
+        boton->setIconSize(QSize(60, 60));
+        m_botonesPersonaje.insert(nombre, boton);
+        grid->addWidget(boton, posiciones.at(i).first, posiciones.at(i).second);
+        connect(boton, &QPushButton::clicked, this, [this, nombre]() { seleccionarPersonaje(nombre); });
+    }
+    centro->addWidget(globo, 1, Qt::AlignCenter);
 
     auto* filaActivo = new QHBoxLayout;
-    m_botonJugadorActivo = new QPushButton("EDITAR JUGADOR 1", pantalla);
-    m_botonRivalActivo = new QPushButton("EDITAR RIVAL", pantalla);
+    m_botonJugadorActivo = new QPushButton("PLAYER 1", pantalla);
+    m_botonRivalActivo = new QPushButton("RIVAL", pantalla);
     filaActivo->addStretch();
     filaActivo->addWidget(m_botonJugadorActivo);
     filaActivo->addWidget(m_botonRivalActivo);
     filaActivo->addStretch();
-    raiz->addLayout(filaActivo);
+    centro->addLayout(filaActivo);
 
-    auto* grid = new QGridLayout;
-    grid->setSpacing(10);
-    const QStringList personajes = {"Iron Man", "Spider-Man", "Thor", "Snoopy", "Mau", "Yeng"};
-    for (int i = 0; i < personajes.size(); ++i) {
-        const QString nombre = personajes.at(i);
-        auto* boton = new QPushButton(nombre, pantalla);
-        boton->setObjectName("tilePersonaje");
-        boton->setIcon(QIcon(retratoPersonaje(nombre, QSize(88, 72))));
-        boton->setIconSize(QSize(58, 58));
-        m_botonesPersonaje.insert(nombre, boton);
-        grid->addWidget(boton, i / 3, i % 3);
-        connect(boton, &QPushButton::clicked, this, [this, nombre]() { seleccionarPersonaje(nombre); });
-    }
-    raiz->addLayout(grid);
+    cuerpo->addLayout(centro, 2);
+    cuerpo->addWidget(crearPanel("RIVAL", "panelRivalArcade", "ladoSelectorRojo", &m_retratoRivalSelector, &m_nombreRivalSelector), 1);
+    raiz->addLayout(cuerpo, 1);
 
     auto* acciones = new QHBoxLayout;
     auto* atras = new QPushButton("ATRAS", pantalla);
@@ -381,6 +426,28 @@ QPixmap MainWindow::retratoPersonaje(const QString& nombre, const QSize& tamano)
     return retrato.scaled(tamano, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 
+QPixmap MainWindow::imagenEleccionPersonaje(const QString& nombre, const QSize& tamano) const
+{
+    QString ruta = ":/eleccion/snoopy.png";
+    if (nombre.contains("Iron", Qt::CaseInsensitive)) {
+        ruta = ":/eleccion/iron.png";
+    } else if (nombre.contains("Spider", Qt::CaseInsensitive)) {
+        ruta = ":/eleccion/spiderman.png";
+    } else if (nombre.contains("Thor", Qt::CaseInsensitive)) {
+        ruta = ":/eleccion/thor.png";
+    } else if (nombre.contains("Mau", Qt::CaseInsensitive)) {
+        ruta = ":/eleccion/mau.png";
+    } else if (nombre.contains("Yeng", Qt::CaseInsensitive)) {
+        ruta = ":/eleccion/yeng.png";
+    }
+
+    const QPixmap imagen(ruta);
+    if (imagen.isNull()) {
+        return retratoPersonaje(nombre, tamano);
+    }
+    return imagen.scaled(tamano, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+}
+
 void MainWindow::actualizarMenuVisual()
 {
     const QPixmap jugadorGrande = retratoPersonaje(m_personajeJugador, QSize(340, 420));
@@ -392,10 +459,10 @@ void MainWindow::actualizarMenuVisual()
         m_retratoRivalMenu->setPixmap(rivalGrande);
     }
     if (m_retratoJugadorSelector) {
-        m_retratoJugadorSelector->setPixmap(retratoPersonaje(m_personajeJugador, QSize(220, 160)));
+        m_retratoJugadorSelector->setPixmap(imagenEleccionPersonaje(m_personajeJugador, QSize(330, 430)));
     }
     if (m_retratoRivalSelector) {
-        m_retratoRivalSelector->setPixmap(retratoPersonaje(m_personajeRival, QSize(220, 160)));
+        m_retratoRivalSelector->setPixmap(imagenEleccionPersonaje(m_personajeRival, QSize(330, 430)));
     }
     if (m_nombreJugadorSelector) {
         m_nombreJugadorSelector->setText(m_personajeJugador.toUpper());
@@ -412,6 +479,17 @@ void MainWindow::actualizarMenuVisual()
         m_botonRivalActivo->setObjectName(!m_editandoJugador ? "botonActivoRojo" : "");
         m_botonRivalActivo->style()->unpolish(m_botonRivalActivo);
         m_botonRivalActivo->style()->polish(m_botonRivalActivo);
+    }
+    for (auto it = m_botonesPersonaje.begin(); it != m_botonesPersonaje.end(); ++it) {
+        QString objectName = "tilePersonajeArcade";
+        if (it.key() == m_personajeJugador) {
+            objectName = "tilePersonajeAzul";
+        } else if (it.key() == m_personajeRival) {
+            objectName = "tilePersonajeRojo";
+        }
+        it.value()->setObjectName(objectName);
+        it.value()->style()->unpolish(it.value());
+        it.value()->style()->polish(it.value());
     }
     for (auto it = m_botonesNivel.begin(); it != m_botonesNivel.end(); ++it) {
         it.value()->setObjectName(it.key() == m_nivelSeleccionado ? "botonPrimario" : "tileNivel");
@@ -454,7 +532,7 @@ void MainWindow::iniciarMusicaMenu()
     m_musicaMenu->setSource(QUrl("qrc:/sonidos/menu.mp3"));
     m_musicaMenu->setLoops(QMediaPlayer::Infinite);
 #else
-    m_musicaMenu->setMedia(QUrl("qrc:/sonidos/menu.mp3"));
+    m_musicaMenu->setMedia(QMediaContent(QUrl("qrc:/sonidos/menu.mp3")));
     m_musicaMenu->setVolume(65);
     connect(m_musicaMenu, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
         if (status == QMediaPlayer::EndOfMedia) {

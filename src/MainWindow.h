@@ -28,6 +28,7 @@ private:
     QWidget* crearSelectorDificultad(QWidget* parent);
     QWidget* crearPantallaJuego();
     QPixmap retratoPersonaje(const QString& nombre, const QSize& tamano) const;
+    QPixmap imagenEleccionPersonaje(const QString& nombre, const QSize& tamano) const;
     void actualizarMenuVisual();
     void seleccionarPersonaje(const QString& nombre);
     void iniciarDesdeMenu();
