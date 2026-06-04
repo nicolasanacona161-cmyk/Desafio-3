@@ -138,10 +138,10 @@ QWidget* MainWindow::crearMenu()
         "QLabel#ladoSelectorRojo { color: #ffd166; font-size: 18px; font-weight: 900; }"
         "QLabel#personajeGrandeAzul { border: none; background: transparent; }"
         "QLabel#personajeGrandeRojo { border: none; background: transparent; }"
-        "QPushButton#tilePersonajeArcade { min-width: 70px; min-height: 70px; max-width: 70px; max-height: 70px; border: 4px solid #ffd200; border-radius: 2px; padding: 2px; background: rgba(250, 178, 18, 225); color: #111; font-size: 8px; font-weight: 900; }"
-        "QPushButton#tilePersonajeArcade:hover { border-color: #ffffff; background: #ffe568; }"
-        "QPushButton#tilePersonajeAzul { min-width: 70px; min-height: 70px; max-width: 70px; max-height: 70px; border: 4px solid #28d7ff; border-radius: 2px; padding: 2px; background: rgba(27, 137, 190, 235); color: #ffffff; font-size: 8px; font-weight: 900; }"
-        "QPushButton#tilePersonajeRojo { min-width: 70px; min-height: 70px; max-width: 70px; max-height: 70px; border: 4px solid #ff3b3b; border-radius: 2px; padding: 2px; background: rgba(184, 34, 34, 235); color: #ffffff; font-size: 8px; font-weight: 900; }"
+        "QPushButton#tilePersonajeArcade { min-width: 82px; min-height: 82px; max-width: 82px; max-height: 82px; border: none; padding: 0px; background: transparent; }"
+        "QPushButton#tilePersonajeArcade:hover { border: none; background: transparent; }"
+        "QPushButton#tilePersonajeAzul { min-width: 82px; min-height: 82px; max-width: 82px; max-height: 82px; border: none; padding: 0px; background: transparent; }"
+        "QPushButton#tilePersonajeRojo { min-width: 82px; min-height: 82px; max-width: 82px; max-height: 82px; border: none; padding: 0px; background: transparent; }"
         "QPushButton#tileNivel { min-height: 74px; text-align: left; }"
         "QPushButton#tileDificultad { min-height: 70px; text-align: left; }");
     actualizarMenuVisual();
@@ -254,8 +254,8 @@ QWidget* MainWindow::crearSelectorPersonajes(QWidget* parent)
         auto* boton = new QPushButton(globo);
         boton->setObjectName("tilePersonajeArcade");
         boton->setToolTip(nombre.toUpper());
-        boton->setIcon(QIcon(imagenEleccionPersonaje(nombre, QSize(96, 96))));
-        boton->setIconSize(QSize(60, 60));
+        boton->setIcon(QIcon(imagenEleccionPersonaje(nombre, QSize(110, 110))));
+        boton->setIconSize(QSize(82, 82));
         m_botonesPersonaje.insert(nombre, boton);
         grid->addWidget(boton, posiciones.at(i).first, posiciones.at(i).second);
         connect(boton, &QPushButton::clicked, this, [this, nombre]() { seleccionarPersonaje(nombre); });
