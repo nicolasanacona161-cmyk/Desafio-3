@@ -23,12 +23,12 @@ struct PerfilIA {
 PerfilIA perfilPara(Dificultad dificultad)
 {
     if (dificultad == Dificultad::Entrenamiento) {
-        return {1.0f, 1.02f, 0.92f, 0.55f, 2, 10, 7, 3, 0.14f};
+        return {1.15f, 1.10f, 1.05f, 0.85f, 1, 7, 5, 4, 0.16f};
     }
     if (dificultad == Dificultad::Vibranium) {
-        return {1.65f, 1.38f, 1.35f, 1.55f, 1, 4, 2, 5, 0.24f};
+        return {2.20f, 1.55f, 1.45f, 1.85f, 1, 2, 1, 7, 0.32f};
     }
-    return {1.35f, 1.18f, 1.12f, 1.05f, 1, 5, 3, 4, 0.18f};
+    return {1.55f, 1.30f, 1.25f, 1.25f, 1, 4, 2, 5, 0.22f};
 }
 }
 
@@ -135,8 +135,8 @@ DecisionIA Razonador::evaluar(const Percepcion& percepcion, const MemoriaIA& mem
         return decision;
     }
     if (jugadorAtacando && percepcion.distanciaJugador < (m_umbralDefensa + 38.0f) * perfil.distanciaDefensa) {
-        const bool contraGolpe = dificultad != Dificultad::Entrenamiento && percepcion.distanciaJugador < m_umbralAtaque * 0.82f;
-        const bool esquivar = !contraGolpe && (dificultad == Dificultad::Vibranium || memoria.obtenerFrecuencia(TipoAccion::GolpeFrontal) > 3);
+        const bool contraGolpe = percepcion.distanciaJugador < m_umbralAtaque * (dificultad == Dificultad::Vibranium ? 0.95f : (dificultad == Dificultad::Normal ? 0.88f : 0.75f));
+        const bool esquivar = !contraGolpe && (dificultad == Dificultad::Vibranium || dificultad == Dificultad::Normal || memoria.obtenerFrecuencia(TipoAccion::GolpeFrontal) > 2);
         decision.accion = contraGolpe ? TipoAccion::Gancho : (esquivar ? TipoAccion::Esquivar : TipoAccion::Bloquear);
         decision.destino = percepcion.posicionJugador;
         decision.prioridad = 0.76f + perfil.distanciaDefensa * 0.16f;
@@ -163,8 +163,8 @@ DecisionIA Razonador::evaluar(const Percepcion& percepcion, const MemoriaIA& mem
         return decision;
     }
     if (percepcion.distanciaJugador <= m_umbralAtaque * perfil.rangoAtaque) {
-        const bool castigarBloqueo = memoria.obtenerFrecuencia(TipoAccion::Bloquear) > (dificultad == Dificultad::Entrenamiento ? 5 : 2);
-        const bool ganchoRitmo = dificultad == Dificultad::Vibranium && memoria.obtenerFrecuencia(TipoAccion::GolpeFrontal) > 1;
+        const bool castigarBloqueo = memoria.obtenerFrecuencia(TipoAccion::Bloquear) > (dificultad == Dificultad::Vibranium ? 0 : (dificultad == Dificultad::Normal ? 2 : 4));
+        const bool ganchoRitmo = (dificultad == Dificultad::Vibranium || dificultad == Dificultad::Normal) && memoria.obtenerFrecuencia(TipoAccion::GolpeFrontal) > 1;
         decision.accion = (castigarBloqueo || ganchoRitmo) ? TipoAccion::Gancho : TipoAccion::GolpeFrontal;
         decision.prioridad = 0.7f * perfil.agresividad;
         return decision;
@@ -216,7 +216,7 @@ void AgenteInteligente::razonar(Dificultad dificultad)
 
     if (m_ciclosPostAtaque > 0) {
         --m_ciclosPostAtaque;
-        const bool puedePresionar = m_percepcion.distanciaJugador > 76.0f || dificultad == Dificultad::Vibranium;
+        const bool puedePresionar = m_percepcion.distanciaJugador > (dificultad == Dificultad::Normal ? 65.0f : 76.0f) || dificultad == Dificultad::Vibranium;
         const float escapeX = m_percepcion.posicionEnemigo.x < m_percepcion.posicionJugador.x
             ? (puedePresionar ? 70.0f : -95.0f)
             : (puedePresionar ? -70.0f : 95.0f);
@@ -226,13 +226,13 @@ void AgenteInteligente::razonar(Dificultad dificultad)
         m_accionSeleccionada.accion = TipoAccion::Mover;
         m_accionSeleccionada.destino = {m_percepcion.posicionEnemigo.x + escapeX, m_percepcion.posicionEnemigo.y + escapeY};
         m_accionSeleccionada.prioridad = 0.88f;
-        if (m_percepcion.distanciaJugador < 70.0f * perfil.rangoAtaque && m_cicloDecision % (dificultad == Dificultad::Vibranium ? 3 : 5) == 0) {
+        if (m_percepcion.distanciaJugador < 70.0f * perfil.rangoAtaque && m_cicloDecision % (dificultad == Dificultad::Vibranium ? 2 : (dificultad == Dificultad::Normal ? 4 : 6)) == 0) {
             m_accionSeleccionada.accion = dificultad == Dificultad::Entrenamiento ? TipoAccion::GolpeFrontal : TipoAccion::Gancho;
             m_accionSeleccionada.destino = m_percepcion.posicionJugador;
         }
-    } else if (vidaRelativa < perfil.vidaRetirada && m_ciclosRetirada < (dificultad == Dificultad::Vibranium ? 44 : 55)) {
+    } else if (vidaRelativa < perfil.vidaRetirada && m_ciclosRetirada < (dificultad == Dificultad::Vibranium ? 60 : (dificultad == Dificultad::Normal ? 50 : 40))) {
         ++m_ciclosRetirada;
-        if (m_percepcion.nivelActual == 1 && m_percepcion.enemigoEnSuelo && m_cicloDecision % (dificultad == Dificultad::Vibranium ? 18 : 26) == 0) {
+        if (m_percepcion.nivelActual == 1 && m_percepcion.enemigoEnSuelo && m_cicloDecision % (dificultad == Dificultad::Vibranium ? 12 : (dificultad == Dificultad::Normal ? 20 : 28)) == 0) {
             m_accionSeleccionada.accion = TipoAccion::Saltar;
             m_accionSeleccionada.destino = m_percepcion.posicionJugador;
             m_accionSeleccionada.prioridad = 1.0f;
@@ -249,12 +249,12 @@ void AgenteInteligente::razonar(Dificultad dificultad)
         m_accionSeleccionada.destino = m_percepcion.posicionJugador;
         m_accionSeleccionada.prioridad = 1.0f;
         m_ciclosPostAtaque = std::max(1, perfil.retiradaPostAtaque / 2);
-    } else if (m_percepcion.distanciaJugador < 48.0f * perfil.rangoAtaque && m_cicloDecision % perfil.frecuenciaGanchoCerca == 0 && vidaRelativa > 0.30f) {
+    } else if (m_percepcion.distanciaJugador < 58.0f * perfil.rangoAtaque && m_cicloDecision % perfil.frecuenciaGanchoCerca == 0 && vidaRelativa > 0.30f) {
         m_accionSeleccionada.accion = TipoAccion::Gancho;
         m_accionSeleccionada.destino = m_percepcion.posicionJugador;
         m_accionSeleccionada.prioridad = 0.94f;
         m_ciclosPostAtaque = perfil.retiradaPostAtaque;
-    } else if (m_percepcion.distanciaJugador < 68.0f * perfil.rangoAtaque && m_cicloDecision % perfil.frecuenciaCombo == 0 && vidaRelativa > 0.25f) {
+    } else if (m_percepcion.distanciaJugador < 78.0f * perfil.rangoAtaque && m_cicloDecision % perfil.frecuenciaCombo == 0 && vidaRelativa > 0.25f) {
         m_accionSeleccionada.accion = (dificultad != Dificultad::Entrenamiento && m_cicloDecision % (perfil.frecuenciaCombo * 2) == 0) ? TipoAccion::Gancho : TipoAccion::GolpeFrontal;
         m_accionSeleccionada.destino = m_percepcion.posicionJugador;
         m_accionSeleccionada.prioridad = 0.91f;
@@ -265,7 +265,7 @@ void AgenteInteligente::razonar(Dificultad dificultad)
         && m_percepcion.nivelActual == 1
         && m_percepcion.enemigoEnSuelo
         && m_percepcion.distanciaJugador > 135.0f
-        && m_cicloDecision % (dificultad == Dificultad::Vibranium ? 30 : 42) == 0) {
+        && m_cicloDecision % (dificultad == Dificultad::Vibranium ? 20 : (dificultad == Dificultad::Normal ? 32 : 45)) == 0) {
         m_accionSeleccionada.accion = TipoAccion::Saltar;
         m_accionSeleccionada.destino = m_percepcion.posicionJugador;
         m_accionSeleccionada.prioridad = 0.72f;
@@ -277,7 +277,7 @@ void AgenteInteligente::razonar(Dificultad dificultad)
         m_ciclosDefensivos = 0;
     }
 
-    const int maxDefensa = dificultad == Dificultad::Vibranium ? 2 : dificultad == Dificultad::Normal ? 4 : 7;
+    const int maxDefensa = dificultad == Dificultad::Vibranium ? 1 : dificultad == Dificultad::Normal ? 3 : 5;
     if (m_ciclosDefensivos > maxDefensa && m_percepcion.distanciaJugador < 72.0f * perfil.rangoAtaque) {
         m_accionSeleccionada.accion = TipoAccion::Gancho;
         m_accionSeleccionada.destino = m_percepcion.posicionJugador;

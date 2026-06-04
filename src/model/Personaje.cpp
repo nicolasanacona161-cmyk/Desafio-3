@@ -419,12 +419,13 @@ Enemigo::~Enemigo()
 void Enemigo::tomarDecision(const Jugador& jugador, const GestorNivel& nivel, Dificultad dificultad)
 {
     if (m_tiempoEfecto <= 0.0f) {
-        const float velocidadIA = dificultad == Dificultad::Vibranium ? 1.22f
-            : dificultad == Dificultad::Normal ? 1.12f
-            : 1.03f;
+        const float velocidadIA = dificultad == Dificultad::Vibranium ? 1.35f
+            : dificultad == Dificultad::Normal ? 1.20f
+            : 1.08f;
         m_velocidadActual = m_velocidadBase * velocidadIA;
     }
-    m_danioGolpe = 5;
+    m_danioGolpe = dificultad == Dificultad::Vibranium ? 10
+                 : (dificultad == Dificultad::Normal ? 7 : 5);
     *m_decisionActual = m_agente->actualizar(jugador, *this, nivel, dificultad);
 }
 

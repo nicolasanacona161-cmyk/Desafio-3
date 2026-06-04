@@ -1,7 +1,6 @@
 #include "MainWindow.h"
 
 #include <QApplication>
-#include <QComboBox>
 #include <QEasingCurve>
 #include <QFrame>
 #include <QGraphicsOpacityEffect>
@@ -16,6 +15,7 @@
 #include <QPushButton>
 #include <QSizePolicy>
 #include <QStackedWidget>
+#include <QStyle>
 #include <QTimer>
 #include <QUrl>
 
@@ -39,6 +39,14 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle("Marvel Boxing - Momento III");
     resize(980, 680);
     connect(m_game, &GameWidget::estadoCambiado, m_estado, &QLabel::setText);
+    connect(m_game, &GameWidget::volverMenuSolicitado, this, [this]() {
+        m_paginas->setCurrentIndex(1);
+        ajustarVolumenMenu(false);
+        if (m_menuPaginas) {
+            m_menuPaginas->setCurrentIndex(0);
+        }
+        m_estado->setText("Escoge personaje y nivel para empezar");
+    });
     iniciarMusicaMenu();
     connect(m_paginas, &QStackedWidget::currentChanged, this, [this](int pagina) {
         ajustarVolumenMenu(pagina == 2);
@@ -109,18 +117,15 @@ QWidget* MainWindow::crearMenu()
         "}"
         "QLabel { color: #f4f7fb; }"
         "QLabel#marca { color: #bfe9ff; font-size: 42px; font-weight: 800; letter-spacing: 0px; }"
+        "QLabel#marcaMenu { color: #ffffff; font-size: 68px; font-weight: 900; letter-spacing: 0px; }"
         "QLabel#submarca { color: #f2f5f9; font-size: 18px; font-weight: 600; }"
         "QLabel#encabezado { color: #f4f7fb; font-size: 22px; font-weight: 800; }"
-        "QLabel#nombreRojo { color: #ff655e; font-size: 14px; font-weight: 800; }"
-        "QLabel#nombreAzul { color: #5ecbff; font-size: 14px; font-weight: 800; }"
-        "QLabel#portraitAzul { border: 2px solid #14bfff; background: rgba(7, 17, 31, 190); border-radius: 4px; }"
-        "QLabel#portraitRojo { border: 2px solid #ff3333; background: rgba(31, 8, 12, 190); border-radius: 4px; }"
         "QPushButton { background: rgba(6, 11, 18, 185); color: #f4f7fb; border: 1px solid #52687c; border-radius: 5px; padding: 11px 18px; font-size: 17px; font-weight: 800; }"
         "QPushButton:hover { border-color: #41c9ff; background: rgba(14, 34, 52, 220); }"
         "QPushButton#botonPrimario { border: 2px solid #25c8ff; color: #ffffff; background: rgba(9, 34, 54, 220); }"
+        "QPushButton#botonMenuPrincipal { min-width: 450px; min-height: 76px; font-size: 24px; border: 2px solid #25c8ff; background: rgba(6, 18, 31, 210); }"
         "QPushButton#botonActivoAzul { border: 2px solid #29c4ff; background: rgba(12, 66, 105, 230); }"
         "QPushButton#botonActivoRojo { border: 2px solid #ff4141; background: rgba(99, 18, 23, 230); }"
-        "QPushButton#tilePersonaje { min-width: 72px; min-height: 72px; padding: 6px; font-size: 11px; }"
         "QWidget#selectorFondo {"
         "  border-image: url(:/fondos/menu.png) 0 0 0 0 stretch stretch;"
         "  background: #050509;"
@@ -147,65 +152,36 @@ QWidget* MainWindow::crearPortadaMenu(QWidget* parent)
 {
     auto* pantalla = new QWidget(parent);
     pantalla->setObjectName("menuFondo");
-    auto* raiz = new QHBoxLayout(pantalla);
-    raiz->setContentsMargins(56, 48, 56, 48);
-    raiz->setSpacing(34);
+    auto* raiz = new QVBoxLayout(pantalla);
+    raiz->setContentsMargins(80, 60, 80, 60);
+    raiz->setSpacing(18);
 
-    auto crearRetratoGrande = [pantalla](const QString& objectName) {
-        auto* label = new QLabel(pantalla);
-        label->setObjectName(objectName);
-        label->setAlignment(Qt::AlignCenter);
-        label->setMinimumSize(230, 330);
-        label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        return label;
-    };
-
-    m_retratoJugadorMenu = crearRetratoGrande("portraitAzul");
-    m_retratoRivalMenu = crearRetratoGrande("portraitRojo");
-
-    auto* centro = new QVBoxLayout;
-    centro->setSpacing(14);
     auto* marca = new QLabel("NICMAC", pantalla);
-    marca->setObjectName("marca");
+    marca->setObjectName("marcaMenu");
     marca->setAlignment(Qt::AlignCenter);
     auto* subtitulo = new QLabel("FIGHT ARENA", pantalla);
     subtitulo->setObjectName("submarca");
     subtitulo->setAlignment(Qt::AlignCenter);
 
-    auto crearBoton = [pantalla](const QString& texto, const QString& objectName = QString()) {
+    auto crearBoton = [pantalla](const QString& texto) {
         auto* boton = new QPushButton(texto, pantalla);
-        if (!objectName.isEmpty()) {
-            boton->setObjectName(objectName);
-        }
-        boton->setMinimumWidth(340);
+        boton->setObjectName("botonMenuPrincipal");
         return boton;
     };
 
-    auto* versus = crearBoton("VERSUS", "botonPrimario");
-    auto* personajes = crearBoton("ELEGIR PERSONAJE");
-    auto* nivel = crearBoton("ELEGIR NIVEL");
-    auto* dificultad = crearBoton("DIFICULTAD");
+    auto* jugar = crearBoton("JUGAR");
     auto* salir = crearBoton("SALIR JUEGO");
 
-    centro->addStretch();
-    centro->addWidget(marca);
-    centro->addWidget(subtitulo);
-    centro->addSpacing(20);
-    centro->addWidget(versus);
-    centro->addWidget(personajes);
-    centro->addWidget(nivel);
-    centro->addWidget(dificultad);
-    centro->addWidget(salir);
-    centro->addStretch();
+    raiz->addStretch(2);
+    raiz->addWidget(marca);
+    raiz->addWidget(subtitulo);
+    raiz->addSpacing(36);
+    raiz->addWidget(jugar, 0, Qt::AlignCenter);
+    raiz->addSpacing(10);
+    raiz->addWidget(salir, 0, Qt::AlignCenter);
+    raiz->addStretch(3);
 
-    raiz->addWidget(m_retratoJugadorMenu, 1);
-    raiz->addLayout(centro, 0);
-    raiz->addWidget(m_retratoRivalMenu, 1);
-
-    connect(versus, &QPushButton::clicked, this, &MainWindow::iniciarDesdeMenu);
-    connect(personajes, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(1); });
-    connect(nivel, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(2); });
-    connect(dificultad, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(3); });
+    connect(jugar, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(2); });
     connect(salir, &QPushButton::clicked, qApp, &QApplication::quit);
     return pantalla;
 }
@@ -316,8 +292,8 @@ QWidget* MainWindow::crearSelectorPersonajes(QWidget* parent)
         m_editandoJugador = false;
         actualizarMenuVisual();
     });
-    connect(atras, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(0); });
-    connect(confirmar, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(0); });
+    connect(atras, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(2); });
+    connect(confirmar, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(3); });
     return pantalla;
 }
 
@@ -350,15 +326,15 @@ QWidget* MainWindow::crearSelectorNivel(QWidget* parent)
 
     auto* acciones = new QHBoxLayout;
     auto* atras = new QPushButton("ATRAS", pantalla);
-    auto* jugar = new QPushButton("VERSUS", pantalla);
-    jugar->setObjectName("botonPrimario");
+    auto* continuar = new QPushButton("CONTINUAR", pantalla);
+    continuar->setObjectName("botonPrimario");
     acciones->addWidget(atras);
     acciones->addStretch();
-    acciones->addWidget(jugar);
+    acciones->addWidget(continuar);
     raiz->addLayout(acciones);
 
     connect(atras, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(0); });
-    connect(jugar, &QPushButton::clicked, this, &MainWindow::iniciarDesdeMenu);
+    connect(continuar, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(1); });
     return pantalla;
 }
 
@@ -392,14 +368,14 @@ QWidget* MainWindow::crearSelectorDificultad(QWidget* parent)
 
     auto* acciones = new QHBoxLayout;
     auto* atras = new QPushButton("ATRAS", pantalla);
-    auto* jugar = new QPushButton("VERSUS", pantalla);
+    auto* jugar = new QPushButton("A JUGAR", pantalla);
     jugar->setObjectName("botonPrimario");
     acciones->addWidget(atras);
     acciones->addStretch();
     acciones->addWidget(jugar);
     raiz->addLayout(acciones);
 
-    connect(atras, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(0); });
+    connect(atras, &QPushButton::clicked, this, [this]() { m_menuPaginas->setCurrentIndex(1); });
     connect(jugar, &QPushButton::clicked, this, &MainWindow::iniciarDesdeMenu);
     return pantalla;
 }
@@ -450,14 +426,14 @@ QPixmap MainWindow::imagenEleccionPersonaje(const QString& nombre, const QSize& 
 
 void MainWindow::actualizarMenuVisual()
 {
-    const QPixmap jugadorGrande = retratoPersonaje(m_personajeJugador, QSize(340, 420));
-    const QPixmap rivalGrande = retratoPersonaje(m_personajeRival, QSize(340, 420));
-    if (m_retratoJugadorMenu) {
-        m_retratoJugadorMenu->setPixmap(jugadorGrande);
+    const bool spidermanDisponible = m_nivelSeleccionado == 2;
+    if (!spidermanDisponible && m_personajeJugador.contains("Spider", Qt::CaseInsensitive)) {
+        m_personajeJugador = "Mau";
     }
-    if (m_retratoRivalMenu) {
-        m_retratoRivalMenu->setPixmap(rivalGrande);
+    if (!spidermanDisponible && m_personajeRival.contains("Spider", Qt::CaseInsensitive)) {
+        m_personajeRival = "Yeng";
     }
+
     if (m_retratoJugadorSelector) {
         m_retratoJugadorSelector->setPixmap(imagenEleccionPersonaje(m_personajeJugador, QSize(330, 430)));
     }
@@ -481,6 +457,10 @@ void MainWindow::actualizarMenuVisual()
         m_botonRivalActivo->style()->polish(m_botonRivalActivo);
     }
     for (auto it = m_botonesPersonaje.begin(); it != m_botonesPersonaje.end(); ++it) {
+        const bool esSpiderman = it.key().contains("Spider", Qt::CaseInsensitive);
+        it.value()->setVisible(!esSpiderman || spidermanDisponible);
+        it.value()->setEnabled(!esSpiderman || spidermanDisponible);
+
         QString objectName = "tilePersonajeArcade";
         if (it.key() == m_personajeJugador) {
             objectName = "tilePersonajeAzul";
@@ -562,30 +542,9 @@ QWidget* MainWindow::crearPantallaJuego()
 {
     auto* pantalla = new QWidget(this);
     auto* layout = new QVBoxLayout(pantalla);
-    auto* barra = new QHBoxLayout;
-    auto* reiniciar = new QPushButton("Reiniciar partida", pantalla);
-    auto* menu = new QPushButton("Volver al menu", pantalla);
-
-    barra->addWidget(reiniciar);
-    barra->addWidget(menu);
-    barra->addStretch();
-    barra->addWidget(m_estado);
-
-    layout->addLayout(barra);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     layout->addWidget(m_game, 1);
-
-    connect(reiniciar, &QPushButton::clicked, this, [this]() {
-        m_game->reiniciar();
-        m_game->setFocus();
-    });
-    connect(menu, &QPushButton::clicked, this, [this]() {
-        m_paginas->setCurrentIndex(1);
-        ajustarVolumenMenu(false);
-        if (m_menuPaginas) {
-            m_menuPaginas->setCurrentIndex(0);
-        }
-        m_estado->setText("Escoge personaje y nivel para empezar");
-    });
 
     return pantalla;
 }
