@@ -59,7 +59,7 @@ public:
     Objeto* calcularPrioridadObjeto(const std::vector<Objeto*>& objetos) const;
 
 private:
-    float m_umbralAtaque = 78.0f;
+    float m_umbralAtaque = 68.0f;
     float m_umbralDefensa = 70.0f;
     int m_umbralVidaCritica = 25;
 };

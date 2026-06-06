@@ -17,20 +17,37 @@ Objeto::Objeto(TipoObjeto tipo, Vector2D posicion, float velocidadCaida)
     }
 }
 
+Objeto::Objeto(TipoObjeto tipo, Vector2D posicion, bool paraJugador, float retardoEfecto)
+    : Objeto(tipo, posicion, 1.0f)
+{
+    if (retardoEfecto < 0.0f) {
+        throw std::invalid_argument("El retardo del efecto no puede ser negativo.");
+    }
+    m_altura = 0.0f;
+    m_retardoEfecto = retardoEfecto;
+    m_tieneObjetivo = true;
+    m_paraJugador = paraJugador;
+}
+
 void Objeto::actualizar(float dt)
 {
     if (!m_activo) {
         return;
     }
-    m_altura -= m_velocidadCaida * dt;
-    if (m_altura <= 0.0f) {
-        m_altura = 0.0f;
+    if (m_retardoEfecto > 0.0f) {
+        m_retardoEfecto -= dt;
+    }
+    if (!m_tieneObjetivo) {
+        m_altura -= m_velocidadCaida * dt;
+        if (m_altura <= 0.0f) {
+            m_altura = 0.0f;
+        }
     }
 }
 
 void Objeto::aplicarA(Personaje& personaje)
 {
-    if (!m_activo || m_altura > 22.0f) {
+    if (!m_activo || !listoParaAplicar()) {
         return;
     }
     personaje.aplicarEfecto(m_efecto);
@@ -38,6 +55,9 @@ void Objeto::aplicarA(Personaje& personaje)
 }
 
 bool Objeto::estaActivo() const { return m_activo; }
+bool Objeto::listoParaAplicar() const { return m_retardoEfecto <= 0.0f && m_altura <= 22.0f; }
+bool Objeto::tieneObjetivo() const { return m_tieneObjetivo; }
+bool Objeto::paraJugador() const { return m_paraJugador; }
 TipoObjeto Objeto::tipo() const { return m_tipo; }
 Vector2D Objeto::posicion() const { return m_posicion; }
 float Objeto::altura() const { return m_altura; }
