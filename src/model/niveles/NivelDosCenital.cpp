@@ -1,5 +1,6 @@
 #include "NivelDosCenital.h"
 
+#include "AgenteInteligente.h"
 #include "Control.h"
 #include "GestorNivel.h"
 #include "Objeto.h"
@@ -71,6 +72,41 @@ void rebotarEnRing(Personaje& personaje, float ancho, float alto)
 
     personaje.setPosicion(posicion);
 }
+
+DecisionIA corregirDestinoIACenital(const DecisionIA& decision, const Enemigo& enemigo, float ancho, float alto)
+{
+    if (!decision.esValida()) {
+        return decision;
+    }
+
+    const LimitesRing limites = limitesRing(ancho, alto);
+    constexpr float margenInterior = 58.0f;
+    const float izquierda = limites.izquierda + margenInterior;
+    const float derecha = limites.derecha - margenInterior;
+    const float arriba = limites.arriba + margenInterior;
+    const float abajo = limites.abajo - margenInterior;
+
+    if (decision.accion != TipoAccion::Mover && decision.accion != TipoAccion::RecogerObjeto) {
+        return decision;
+    }
+
+    DecisionIA corregida = decision;
+    corregida.destino.x = std::clamp(decision.destino.x, izquierda, derecha);
+    corregida.destino.y = std::clamp(decision.destino.y, arriba, abajo);
+
+    const bool fueraX = decision.destino.x < izquierda || decision.destino.x > derecha;
+    const bool fueraY = decision.destino.y < arriba || decision.destino.y > abajo;
+    if (fueraX && fueraY) {
+        const Vector2D posicion = enemigo.posicion();
+        const Vector2D desplazamiento = decision.destino - posicion;
+        if (std::abs(desplazamiento.x) >= std::abs(desplazamiento.y)) {
+            corregida.destino.y = std::clamp(posicion.y, arriba, abajo);
+        } else {
+            corregida.destino.x = std::clamp(posicion.x, izquierda, derecha);
+        }
+    }
+    return corregida;
+}
 }
 
 int NivelDosCenital::numero() const
@@ -102,6 +138,10 @@ void NivelDosCenital::actualizar(GestorNivel& gestor, float dt, const Control& c
     gestor.jugador().procesarEntrada(control, true);
     gestor.jugador().mover(control.obtenerDireccion(true), dt);
     gestor.enemigo().tomarDecision(gestor.jugador(), gestor, gestor.m_dificultad);
+    gestor.enemigo().aplicarDecision(corregirDestinoIACenital(gestor.enemigo().decisionActual(),
+                                                               gestor.enemigo(),
+                                                               gestor.m_anchoJuego,
+                                                               gestor.m_altoJuego));
     gestor.enemigo().ejecutarDecision(dt);
     rebotarEnRing(gestor.jugador(), gestor.m_anchoJuego, gestor.m_altoJuego);
     rebotarEnRing(gestor.enemigo(), gestor.m_anchoJuego, gestor.m_altoJuego);

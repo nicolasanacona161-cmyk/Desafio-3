@@ -42,7 +42,9 @@ bool SistemaCombate::hayImpacto(const Personaje& atacante, const Personaje& obje
 
 int SistemaCombate::calcularDanio(const Personaje& atacante, const Personaje& objetivo) const
 {
-    float danio = atacante.ultimaAccion() == TipoAccion::Gancho ? 8.0f : 5.0f;
+    float baseDanio = atacante.danioGolpe();
+    float danio = atacante.ultimaAccion() == TipoAccion::Gancho ? baseDanio * 1.6f : baseDanio;
+    danio *= atacante.factorAtaque();
     if (objetivo.estado() == EstadoPersonaje::Bloqueando) {
         danio *= m_multiplicadorBloqueo;
     }

@@ -11,6 +11,24 @@
 #include <cmath>
 #include <stdexcept>
 
+namespace {
+int probabilidadBoostJugador(Dificultad dificultad)
+{
+    if (dificultad == Dificultad::Entrenamiento) {
+        return 90;
+    }
+    if (dificultad == Dificultad::Vibranium) {
+        return 15;
+    }
+    return 40;
+}
+
+int probabilidadBoostIA(Dificultad dificultad)
+{
+    return dificultad == Dificultad::Vibranium ? 75 : 50;
+}
+}
+
 GestorNivel::GestorNivel()
 {
     m_dificultad = Dificultad::Normal;
@@ -84,15 +102,22 @@ float GestorNivel::intervaloObjetos() const
 
 void GestorNivel::generarObjetoAleatorio()
 {
-    const int minX = 20;
-    const int maxX = std::max(minX + 1, static_cast<int>(m_anchoJuego - 20.0f));
-    const int minY = 90;
-    const int maxY = std::max(minY + 1, static_cast<int>(m_altoJuego - 35.0f));
-    const float x = QRandomGenerator::global()->bounded(minX, maxX);
-    const float y = QRandomGenerator::global()->bounded(minY, maxY);
-    const bool tomate = QRandomGenerator::global()->bounded(100) < 55;
-    const float velocidad = 145.0f;
-    m_objetos.push_back(new Objeto(tomate ? TipoObjeto::Tomate : TipoObjeto::BebidaEnergetica, {x, y}, velocidad));
+    if (m_personajes.size() < 2) {
+        return;
+    }
+
+    const bool haciaJugador = QRandomGenerator::global()->bounded(100) < 50;
+    Personaje& objetivo = haciaJugador
+        ? static_cast<Personaje&>(jugador())
+        : static_cast<Personaje&>(enemigo());
+    const int probabilidadBoost = haciaJugador ? probabilidadBoostJugador(m_dificultad) : probabilidadBoostIA(m_dificultad);
+    const bool boost = QRandomGenerator::global()->bounded(100) < probabilidadBoost;
+    const TipoObjeto tipo = boost ? TipoObjeto::BebidaEnergetica : TipoObjeto::Tomate;
+
+    const QString receptor = haciaJugador ? "Jugador" : "IA";
+    const QString efecto = tipo == TipoObjeto::Tomate ? "SLOW" : "BOOST";
+    m_objetos.push_back(new Objeto(tipo, objetivo.posicion(), haciaJugador, 0.35f));
+    m_mensajeEstado = QString("%1 recibe %2").arg(receptor, efecto);
 }
 
 void GestorNivel::verificarColisiones()
@@ -146,7 +171,21 @@ void GestorNivel::verificarColisiones()
     }
     }
     for (Objeto* objeto : m_objetos) {
-        if (!objeto || !objeto->estaActivo() || objeto->altura() > 22.0f) {
+        if (!objeto || !objeto->estaActivo() || !objeto->listoParaAplicar()) {
+            continue;
+        }
+        if (objeto->tieneObjetivo()) {
+            const bool efectoJugador = objeto->paraJugador();
+            Personaje& objetivo = efectoJugador
+                ? static_cast<Personaje&>(jugador())
+                : static_cast<Personaje&>(enemigo());
+            m_mensajeEstado = efectoJugador
+                ? (objeto->tipo() == TipoObjeto::Tomate ? "Jugador en SLOW: menos velocidad y golpe" : "Jugador en BOOST: mas velocidad y golpe")
+                : (objeto->tipo() == TipoObjeto::Tomate ? "IA en SLOW: menos velocidad y golpe" : "IA en BOOST: mas velocidad y golpe");
+            objeto->aplicarA(objetivo);
+            if (efectoJugador) {
+                jugador().agregarCarga(objeto->tipo() == TipoObjeto::BebidaEnergetica ? 18.0f : 8.0f);
+            }
             continue;
         }
         if ((objeto->posicion() - jugador().posicion()).magnitud() <= 76.0f) {
