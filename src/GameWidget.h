@@ -107,6 +107,7 @@ private:
     SpriteAnimado crearSpritesSpiderman() const;
     SpriteAnimado crearSpritesSpidermanNivel2() const;
     SpriteAnimado crearSpritesThor() const;
+    SpriteAnimado crearSpritesThorNivel2() const;
     SpriteAnimado crearSpritesSnoopy() const;
     SpriteAnimado crearSpritesMau() const;
     SpriteAnimado crearSpritesYeng() const;
@@ -154,6 +155,7 @@ private:
     SpriteAnimado m_spiderman;
     SpriteAnimado m_spidermanNivel2;
     SpriteAnimado m_thor;
+    SpriteAnimado m_thorNivel2;
     SpriteAnimado m_snoopy;
     SpriteAnimado m_mau;
     SpriteAnimado m_yeng;

@@ -39,6 +39,7 @@ GameWidget::GameWidget(QWidget* parent)
       m_spiderman(crearSpritesSpiderman()),
       m_spidermanNivel2(crearSpritesSpidermanNivel2()),
       m_thor(crearSpritesThor()),
+      m_thorNivel2(crearSpritesThorNivel2()),
       m_snoopy(crearSpritesSnoopy()),
       m_mau(crearSpritesMau()),
       m_yeng(crearSpritesYeng()),
@@ -174,6 +175,7 @@ void GameWidget::tickAnimadores()
     tickSprite(m_spiderman);
     tickSprite(m_spidermanNivel2);
     tickSprite(m_thor);
+    tickSprite(m_thorNivel2);
     tickSprite(m_snoopy);
     tickSprite(m_mau);
     tickSprite(m_yeng);
@@ -188,6 +190,7 @@ void GameWidget::reiniciarAnimadores()
     resetSprite(m_spiderman);
     resetSprite(m_spidermanNivel2);
     resetSprite(m_thor);
+    resetSprite(m_thorNivel2);
     resetSprite(m_snoopy);
     resetSprite(m_mau);
     resetSprite(m_yeng);
@@ -519,6 +522,28 @@ GameWidget::SpriteAnimado GameWidget::crearSpritesThor() const
     return s;
 }
 
+GameWidget::SpriteAnimado GameWidget::crearSpritesThorNivel2() const
+{
+    SpriteAnimado s;
+    s.hoja = cargarSpriteSheet(":/sprites/Lv2_thor_DASW.png");
+    s.frames[AnimacionSprite::CenitalMoverArriba] = {QRect(0, 0, 100, 110)};
+    s.frames[AnimacionSprite::CenitalMoverDerecha] = {QRect(100, 0, 100, 110)};
+    s.frames[AnimacionSprite::CenitalMoverIzquierda] = {QRect(200, 0, 100, 110)};
+    s.frames[AnimacionSprite::CenitalGolpe] = {
+        QRect(300, 0, 100, 110),
+        QRect(400, 0, 100, 110)
+    };
+    s.frames[AnimacionSprite::CenitalMoverAbajo] = {
+        QRect(500, 0, 100, 110),
+        QRect(600, 0, 100, 110)
+    };
+    s.frames[AnimacionSprite::CenitalQuieto] = s.frames[AnimacionSprite::CenitalMoverDerecha];
+    s.frames[AnimacionSprite::CenitalMover] = s.frames[AnimacionSprite::CenitalMoverDerecha];
+    s.frames[AnimacionSprite::CenitalDanio] = s.frames[AnimacionSprite::CenitalMoverDerecha];
+    prepararAnimadores(s);
+    return s;
+}
+
 GameWidget::SpriteAnimado GameWidget::crearSpritesSnoopy() const
 {
     SpriteAnimado s;
@@ -780,16 +805,25 @@ const GameWidget::SpriteAnimado& GameWidget::spritesPara(const Personaje& person
         if (m_nivel.nivelActual() == 2 && m_spriteJugador.contains("Spider", Qt::CaseInsensitive)) {
             return m_spidermanNivel2;
         }
+        if (m_nivel.nivelActual() == 2 && m_spriteJugador.contains("Thor", Qt::CaseInsensitive)) {
+            return m_thorNivel2;
+        }
         return spritesPorNombre(m_spriteJugador);
     }
     if (&personaje == &m_nivel.enemigo()) {
         if (m_nivel.nivelActual() == 2 && m_spriteEnemigo.contains("Spider", Qt::CaseInsensitive)) {
             return m_spidermanNivel2;
         }
+        if (m_nivel.nivelActual() == 2 && m_spriteEnemigo.contains("Thor", Qt::CaseInsensitive)) {
+            return m_thorNivel2;
+        }
         return spritesPorNombre(m_spriteEnemigo);
     }
     if (m_nivel.nivelActual() == 2 && personaje.nombre().contains("Spider", Qt::CaseInsensitive)) {
         return m_spidermanNivel2;
+    }
+    if (m_nivel.nivelActual() == 2 && personaje.nombre().contains("Thor", Qt::CaseInsensitive)) {
+        return m_thorNivel2;
     }
     return spritesPorNombre(personaje.nombre());
 }
@@ -966,7 +1000,8 @@ QSizeF GameWidget::tamanoDibujo(const Personaje& personaje, AnimacionSprite anim
     const bool cenital = m_nivel.nivelActual() == 2;
     if (cenital) {
         qreal base = 56.0;
-        if (personaje.nombre().contains("Spider", Qt::CaseInsensitive)) {
+        if (personaje.nombre().contains("Spider", Qt::CaseInsensitive)
+            || personaje.nombre().contains("Thor", Qt::CaseInsensitive)) {
             base = 98.0;
         } else if (personaje.nombre().contains("Iron", Qt::CaseInsensitive)) {
             base = 58.0;

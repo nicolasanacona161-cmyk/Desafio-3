@@ -1,0 +1,41 @@
+<RCC>
+    <qresource prefix="/sprites">
+        <file alias="iron_man.png">iron_man.png</file>
+        <file alias="spiderman.png">spiderman.png</file>
+        <file alias="Lv2_spiderman_DASW.png">Lv2_spiderman_DASW.png</file>
+        <file alias="Lv2_thor_DASW.png">Lv2_thor_DASW.png</file>
+        <file alias="thor.png">thor.png</file>
+        <file alias="snoopy.png">snoopy.png</file>
+        <file alias="mau.png">mau.png</file>
+        <file alias="yeng.png">yeng.png</file>
+    </qresource>
+    <qresource prefix="/fondos">
+        <file alias="nivel1.png">fondo nivel1.png</file>
+        <file alias="nivel2.png">fondo nivel2_boxeo.png</file>
+        <file alias="menu.png">fondo_menu.png</file>
+    </qresource>
+    <qresource prefix="/branding">
+        <file alias="logo_nicmac.png">Logo_NICMAC_OF.png</file>
+    </qresource>
+    <qresource prefix="/menu_portraits">
+        <file alias="iron.png">assets_menu/iron_menu.png</file>
+        <file alias="spiderman.png">assets_menu/spiderman_menu.png</file>
+        <file alias="thor.png">assets_menu/thor_menu.png</file>
+        <file alias="snoopy.png">assets_menu/snoopy_menu.png</file>
+        <file alias="mau.png">assets_menu/mau_menu.png</file>
+        <file alias="yeng.png">assets_menu/yeng_menu.png</file>
+    </qresource>
+    <qresource prefix="/eleccion">
+        <file alias="iron.png">eleccion/iron_man.eleccion.jpeg</file>
+        <file alias="spiderman.png">eleccion/spiderma.eleccion.jpeg</file>
+        <file alias="thor.png">eleccion/thor.eleccion.jpeg</file>
+        <file alias="snoopy.png">eleccion/snoopy.eleccion.jpeg</file>
+        <file alias="mau.png">eleccion/mau.eleccion.jpeg</file>
+        <file alias="yeng.png">eleccion/yeng.eleccion.jpeg</file>
+    </qresource>
+    <qresource prefix="/sonidos">
+        <file alias="menu.mp3">sonidos/menu.mp3</file>
+        <file alias="golpe.mp3">sonidos/golpe.mp3</file>
+        <file alias="super.mp3">sonidos/super.mp3</file>
+    </qresource>
+</RCC>
